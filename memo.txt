@@ -1,0 +1,58 @@
+1. Thing を作成
+
+2. 証明書を作成＆ダウンロード
+　 → 「ポリシーをアタッチ」をクリック
+
+3. ポリシーを新規作成する
+　 → action を iot:* とかに設定して Allow にして保存
+
+4. amplify add auth → amplify push
+
+5. Cognitoで作成されたUser Pool を確認（新規作成する必要ある？）
+　 → User Pool IDをメモ
+
+6. User Pool で App Clientを作成する
+ 　→ App Client ID をメモ
+
+7. Cognito で Identity Pool を作成する
+　 → Enable Unauthenticated Identities を忘れずに（Auth/Unauthの2つのロールが作成される）
+　 → Unauth_Role のポリシーを編集（編集内容は以下URL参考）して IoTリソースにアクセスできる権限を与える（UnauthであればUerPoolでfederatedsigninする必要がない）
+　 → Identity Pool ID をメモ
+
+8. Cognito Identity ID を 3で作成した AWS IoT Policy に紐づける
+　 → aws iot attach-principal-policy --policy-name '<YOUR_IOT_POLICY>' --principal '<YOUR_COGNITO_IDENTITY_ID>'
+ 　→ 「AWSIoT」 ⇒「安全性」⇒「ポリシー」⇒「証明書」で COGNITO ID と書かれた証明書を確認できる
+
+9. プロジェクトフォルダで必要なライブラリをインストールしたのち、以下のように設定する
+
+Amplify.configure({
+  Auth: {
+    identityPoolId: "<Identity Pool ID>",
+    region: "<YOUR_REGION>",
+    userPoolId: "<User Pool ID>",
+    userPoolWebClientId: "<App Client ID>",
+  },
+});
+
+Amplify.addPluggable(
+  new AWSIoTProvider({
+    aws_pubsub_region: "us-east-1",
+    aws_pubsub_endpoint: `wss://<YOUR_ENDPOINT>/mqtt`,	// AWSIoT⇒設定⇒エンドポイント で確認できる
+  })
+);
+
+
+https://medium.com/serverlessguru/serverless-real-time-reactjs-app-aws-iot-mqtt-17d023954045
+https://haverchuck.github.io/docs/js/pubsub
+
+
+
+
+
+
+ボタン
+https://qiita.com/ksksue@github/items/d0f02675f11ab38c190c
+https://www.npmjs.com/package/rpi-gpio
+
+IoTJOB
+https://www.tdi.co.jp/miso/aws-iot-jobs-s3
